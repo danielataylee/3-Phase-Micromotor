@@ -95,7 +95,7 @@ void setup() {
 //   Start the I2C Bus as Slave on address 0x04
   Wire.begin(0x04); 
 //   Attach a function to trigger when something is received.
-  Wire.onReceive(receiveEvent);
+  
 
   pinMode(DAC0, OUTPUT);  
  // pinMode(DAC1, OUTPUT);  
@@ -123,14 +123,14 @@ void generateSineShifted(int offs, int * wave)
 }
 
 void loop() {
-
-  if (x > 5) {
+Wire.onReceive(receiveEvent);
+while(x>0)
+{
     i = (i+1)%MAX_SAMPLES; // Next element, and if reached last, go back to 0
   
     analogWrite(DAC0, sinewave1[i]); //Write every element of sinewave1
+}
     //analogWrite(DAC1, sinewave2[i]); //Write every element of sinewave2 (2nd wave phase shifted by offset)
     
-  }
+ 
 }
-
-
