@@ -8,6 +8,7 @@
 
 //Variables
 int i = 0; //Iterate through wave values for wave 1
+int j=0;
 int offsetdeg = 120; //120 degrees 
 int offset; //Formula: offset degrees * num of samples / 360
 int bitMul = 1<<8; //Is equivalent to 2^8 = 256
@@ -38,9 +39,9 @@ void loop()
 //off is the offset, table is a pointer to the sine lookup table array and samples is the num of elements
 void generateSineTable(int off, int * table, int samples, int a)
 {
-  for (i=0 ; i < samples ; i++)
+  for (i=off ; i < samples + off ; i++)
   {
-    table[i] = a*(round(((sin(2*PI*i/samples))*bitMul))+bitMul);
+    table[j++] = a*(round(((sin(2*PI*i/samples))*bitMul))+bitMul);
   }
 }
 
