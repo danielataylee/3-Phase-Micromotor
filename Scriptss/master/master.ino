@@ -20,14 +20,14 @@ to drive the dual beam micromotor
 //Variables
 int i = 0; //Iterate through wave values for sine 
 int sig = 1; //Like boolean 1, is true to start the slaves
-
+int k=0;
 
 //Metohd to configure Arduino
 void setup() 
 {
   Wire.begin(); //Start the I2C Bus as Master
-  pinMode(DAC0, OUTPUT); //Set DAC0 as output
   pinMode(23, OUTPUT); //Set pin 23 as output
+  pinMode(49, OUTPUT); //Set pin 49 as output
 
   analogWriteResolution(DAC_RESOLUTION); //Set up resolution
 
@@ -39,6 +39,8 @@ void setup()
   Wire.beginTransmission(0x06); //transmit to device at address 0x06
   Wire.write(sig); //Send signal to start (1)
   Wire.endTransmission();    //Sop transmitting to slave2  
+
+  digitalWrite(49, LOW); //Not change freq
 }
 
 //Method to loop indefinetely
@@ -48,7 +50,17 @@ void loop()
     delay(8000);
     digitalWrite(23, HIGH);
     delay(1); //1 millisec so it has time
+
+    //If lase trigger output changes
+    if (k==3)//Just testing that changes frequency
+    {
+    digitalWrite(49, HIGH);
     //digitalWrite(23, HIGH);
+    delay(1); //1 millisec so it has time
+    digitalWrite(49, LOW);
+    }
+
+    k++;
     
   //Should read laser trigger output to get frequency and then call method to determine number of samples and pass that to the slaves
 }
