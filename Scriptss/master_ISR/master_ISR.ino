@@ -5,63 +5,84 @@ Date: May 2018
 Organization: BCCRC Imaging Unit
 Authors: Varalee Chinbomsom and Daniela Tay Lee Sanchez
 Description: This script is for the master of the I2C connection
-It should read input from the laster trigger output 
-Calculate the number of samples in the sine lookup table from desired frequency
-and pass that to the 3 slaves, so they can each generate a sine wave
-to drive the dual beam micromotor
+It should get the number of samples and send it to the slaves
 */
 
 #include <Wire.h> // Include the required Wire library for I2C connection
 
-
 //Constants
-#define DAC_RESOLUTION 12
+#define DAC_RESOLUTION 12 //12 bits -> max num is 4095
+#define PIN_SIGNAL 49 //Pin to signal when to write output
+#define S1_ADDRESS 0x04
+#define S2_ADDRESS 0x06
+#define S3_ADDRESS 0x
 
-//Variables
-int i = 0; //Iterate through wave values for sine 
-int sig = 1; //Like boolean 1, is true to start the slaves
-int k=0;
+//Signal for the slaves so know which table to pick
+unsigned char sig2slaves = 0; //Has to be unsigned char bc I2C transfers 1 byte (8 bits), int data type takes 2 bytes
+/*
+ Sig -> table
+  1  -> 2048
+  2  -> 1024
+  3  -> 512
+  4  -> 256
+*/
+
+int sent = 1; //So it knows when to transfer signal, and only once
+int k=0; //to test
 
 //Metohd to configure Arduino
 void setup() 
 {
   Wire.begin(); //Start the I2C Bus as Master
-  pinMode(23, OUTPUT); //Set pin 23 as output
-  pinMode(49, OUTPUT); //Set pin 49 as output
-  pinMode(43, OUTPUT); //Set pin 49 as output
-
-  analogWriteResolution(DAC_RESOLUTION); //Set up resolution
-
-  //Send values to slave -> Determine phase offset from this delay and consider 
-  Wire.beginTransmission(0x04); //transmit to device at address 0x04
-  Wire.write(sig); //Send signal to start (1)
-  Wire.endTransmission();    //Sop transmitting to slave1
-
-  Wire.beginTransmission(0x06); //transmit to device at address 0x06
-  Wire.write(sig); //Send signal to start (1)
-  Wire.endTransmission();    //Sop transmitting to slave2  
+  //Set pins as output
+  pinMode(PIN_SIGNAL, OUTPUT); 
+  //Set up resolution
+  analogWriteResolution(DAC_RESOLUTION); 
 }
 
 
 //Method to loop indefinetely
 void loop() 
 {
-    //LOW TO HIGH -> Make the DAC output from sine lookup table
+    digitalWrite(PIN_SIGNAL, LOW); 
+    digitalWrite(PIN_SIGNAL, HIGH);
     
-
-    //JUST TESTING -> ACTUALLY SHOULD DO: If lase trigger output changes
-    if (k<512000)//Just testing that changes frequency
-    { //512
-    digitalWrite(43, HIGH); //Tell to change samples num
-    digitalWrite(23, LOW);
-    digitalWrite(23, HIGH);
-    }
-
-    else //1024
+    //JUST TESTING -> after certain time, change number of samples
+    //ACTUALLY SHOULD DO: If lase trigger output changes
+    if (k == 512000)
     {
-      digitalWrite(43, LOW);
-      digitalWrite(49, LOW); 
-      digitalWrite(49, HIGH);
+      sent = 0; //So knows to send new value
+      sig2slaves = 1;
     }
-    k++;
+    else if (k == 1536000)
+    {
+      sent = 0; //So knows to send new value
+      sig2slaves = 2;
+    }
+    else if (k == 2048000)
+    {
+      sent = 0; //So knows to send new value
+      sig2slaves = 3;
+    }
+    else if (k == 2560000)
+    {
+      sent = 0; //So knows to send new value
+      sig2slaves = 4;
+    }
+
+    //If need to send to slaves
+    if (sent == 0) 
+    {
+      //Send value to slave1
+      Wire.beginTransmission(S1_ADDRESS); 
+      Wire.write(sig2slaves); 
+      Wire.endTransmission();   
+      //Send value to slave1
+      Wire.beginTransmission(S2_ADDRESS); 
+      Wire.write(sig2slaves); 
+      Wire.endTransmission();   
+      sent=1; //Done sending
+    }
+   
+    k++; //just for testing
 }
