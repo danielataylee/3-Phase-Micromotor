@@ -1,7 +1,7 @@
 //Arduino1
 
 /*
-Date: May 2018
+Date: June 2018
 Organization: BCCRC Imaging Unit
 Authors: Varalee Chinbomsom and Daniela Tay Lee Sanchez
 Purpose:     To drive the dual beam micromotor catheter (Namiki Precision) that needs 3 sine waves (Use 1 Arduino for each)
@@ -21,7 +21,7 @@ Description: The script generates a sine lookup table of number of samples SAMPL
 #define PIN_SIGNAL 51 //read trigger input
 #define RESET_OUT 31 //This pin outputs high and is used for the switch, only one arduino needs it but the code should be the same so the frequencies are the same among all 3 arduinos 
 #define RESET_IN 23
-#define DAC DAC1
+#define DAC DAC0
 
 
 //Variables -> Some declared as volatile because used in interrput
@@ -56,7 +56,7 @@ void setup()
    digitalWrite(RESET_OUT, HIGH); 
    //Initialize interrupt service routines
    attachInterrupt(digitalPinToInterrupt(PIN_SIGNAL), TRIGGER_ISR, RISING); //Call TRIGGER_ISR when PIN_SIGNAL goes from low to high
-   attachInterrupt(digitalPinToInterrupt(RESET_IN), RESET_ISR, FALLING); //Call RESET_ISR when RESET_IN changes
+   attachInterrupt(digitalPinToInterrupt(RESET_IN), RESET_ISR, LOW); //Call RESET_ISR when RESET_IN changes
 }
 
 //Method to generate sine lookup table
@@ -79,7 +79,7 @@ void loop()
 //Interrupt method, everytime the pin goes low to high
 void TRIGGER_ISR() 
 {  
-  if ((RESET_IN) == HIGH) //If switch is on, produce output
+  if ((digitalRead((RESET_IN))) == HIGH) //If switch is on, produce output
   {
     //If need to output a point
     if ((count%steps == 0) || (pulse <= out)) //Ex: 1000 samples -> steps = 10, Output every multiple of 10 point, or if increasing frequency -> output until pulse = out
@@ -102,7 +102,7 @@ void TRIGGER_ISR()
     
     count++;
     
-  }//End if mastersig is 1
+  }//End if reset in is 1
 
   //Just dont output anything otherwise
 }
@@ -116,4 +116,5 @@ void RESET_ISR()
   pulse=0;
   out=0;
   points=0;
+  
 }
