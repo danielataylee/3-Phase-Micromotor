@@ -26,9 +26,7 @@ Description: The script generates a sine lookup table of number of samples SAMPL
 
 //Variables -> Some declared as volatile because used in interrput
 volatile int i = 0; //Iterate through wave values for sine wave
-volatile unsigned char mastersig = 0; //Signal to receive to start outputting
 volatile int steps = 10000/SAMPLES; //Steps to ramp up
-volatile int k = 0; //Used for syncing the start
 volatile int count = 0; 
 volatile int pulse = 0; 
 volatile int out = 0; //Start skipping this many ticks
@@ -118,5 +116,4 @@ void RESET_ISR()
   pulse=0;
   out=0;
   points=0;
-  k=0;
 }
